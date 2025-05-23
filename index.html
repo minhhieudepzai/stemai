@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hiếu AI - Khám phá vũ trụ trí tuệ nhân tạo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #6e6ef8;
+            --secondary-color: #f86ef8;
+            --accent-color: #6ef8b5;
+            --bg-color: #0a0a1a;
+            --card-bg: rgba(15, 15, 35, 0.8);
+            --text-color: #e0e0ff;
+            --glass-effect: blur(16px) saturate(180%);
+            --star-color: rgba(255, 255, 255, 0.8);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            overflow-x: hidden;
+            cursor: none;
+            position: relative;
+        }
+
+        /* Space Background Elements */
+        .space-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+        }
+
+        .star {
+            position: absolute;
+            background-color: var(--star-color);
+            border-radius: 50%;
+            animation: twinkle var(--duration, 5s) infinite ease-in-out;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+
+        .shooting-star {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 50%, rgba(255,255,255,0) 100%);
+            border-radius: 50%;
+            filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.8));
+            transform: rotate(var(--angle, 0deg));
+            animation: shoot var(--speed, 3s) linear infinite;
+            animation-delay: var(--delay, 0s);
+            opacity: 0;
+        }
+
+        @keyframes shoot {
+            0% {
+                transform: translateX(0) translateY(0) rotate(var(--angle, 0deg));
+                opacity: 1;
+            }
+            70% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(var(--distance-x, 1000px)) translateY(var(--distance-y, 500px)) rotate(var(--angle, 0deg));
+                opacity: 0;
+            }
+        }
+
+        .galaxy {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(110,110,248,0.2) 0%, rgba(15,15,35,0) 70%);
+            filter: blur(10px);
+        }
+
+        /* Cursor Styles */
+        .cursor {
+            position: fixed;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            mix-blend-mode: difference;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: transform 0.1s ease, width 0.3s ease, height 0.3s ease;
+            will-change: transform;
+        }
+
+        .cursor-follower {
+            position: fixed;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid var(--primary-color);
+            pointer-events: none;
+            z-index: 9998;
+            transform: translate(-50%, -50%);
+            transition: transform 0.4s ease, width 0.4s ease, height 0.4s ease;
+            will-change: transform;
+            opacity: 0.5;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        /* Header Styles */
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 1s ease both;
+            position: relative;
+            z-index: 1;
+        }
+
+        h1 {
+            font-size: 4rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 1rem;
+            letter-spacing: -1px;
+            text-shadow: 0 0 20px rgba(110, 110, 248, 0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #a0a0ff;
+            font-weight: 300;
+            margin-bottom: 2rem;
+        }
+
+        /* Cards Container */
+        .cards-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+            width: 100%;
+            margin-bottom: 3rem;
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 320px;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: var(--glass-effect);
+            -webkit-backdrop-filter: var(--glass-effect);
+            border: 1px solid rgba(110, 110, 248, 0.1);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+            transform: perspective(1000px);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.8s ease both;
+            z-index: 1;
+        }
+
+        .card:nth-child(1) { animation-delay: 0.2s; }
+        .card:nth-child(2) { animation-delay: 0.4s; }
+        .card:nth-child(3) { animation-delay: 0.6s; }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, 
+                transparent, 
+                rgba(110, 110, 248, 0.1), 
+                transparent);
+            transform: rotate(45deg);
+            transition: all 0.6s ease;
+            z-index: -1;
+        }
+
+        .card:hover {
+            transform: perspective(1000px) translateY(-10px) rotateX(5deg) rotateY(5deg);
+            box-shadow: 0 12px 40px rgba(110, 110, 248, 0.2);
+            border: 1px solid rgba(110, 110, 248, 0.3);
+        }
+
+        .card:hover::before {
+            animation: shine 1.5s ease;
+        }
+
+        @keyframes shine {
+            0% { transform: rotate(45deg) translateX(-100%); }
+            100% { transform: rotate(45deg) translateX(100%); }
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary-color);
+            text-shadow: 0 0 10px rgba(110, 110, 248, 0.5);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: white;
+        }
+
+        .card-desc {
+            font-size: 1rem;
+            color: #b0b0ff;
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+
+        /* Button Styles */
+        .explore-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.8rem 1.5rem;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: none;
+            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            box-shadow: 0 4px 15px rgba(110, 110, 248, 0.3);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            width: fit-content;
+            text-decoration: none;
+
+        }
+
+        .explore-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, var(--secondary-color), var(--primary-color));
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .explore-btn:hover::before {
+            opacity: 1;
+        }
+
+        .explore-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(110, 110, 248, 0.6);
+        }
+
+        .explore-btn:active {
+            transform: translateY(0);
+        }
+
+        .explore-btn i {
+            margin-left: 0.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .explore-btn:hover i {
+            transform: translateX(3px);
+        }
+
+        /* Chat Container */
+        .chat-container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: var(--glass-effect);
+            -webkit-backdrop-filter: var(--glass-effect);
+            border: 1px solid rgba(110, 110, 248, 0.1);
+            margin-top: 2rem;
+            animation: fadeIn 1s ease both;
+            display: none;
+        }
+
+        .chat-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .chat-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            color: white;
+            font-weight: bold;
+        }
+
+        .chat-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .chat-messages {
+            height: 300px;
+            overflow-y: auto;
+            margin-bottom: 1.5rem;
+            padding-right: 0.5rem;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message-user {
+            align-self: flex-end;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 0.8rem 1.2rem;
+            border-radius: 18px 18px 0 18px;
+            max-width: 70%;
+            margin-bottom: 0.5rem;
+        }
+
+        .message-ai {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            padding: 0.8rem 1.2rem;
+            border-radius: 18px 18px 18px 0;
+            max-width: 70%;
+            margin-bottom: 0.5rem;
+            border: 1px solid rgba(110, 110, 248, 0.2);
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            color: #a0a0ff;
+            align-self: flex-end;
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 0.8rem 1.2rem;
+            border-radius: 50px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            font-size: 1rem;
+            border: 1px solid rgba(110, 110, 248, 0.2);
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border: 1px solid var(--primary-color);
+            box-shadow: 0 0 10px rgba(110, 110, 248, 0.3);
+        }
+
+        .chat-send-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .chat-send-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(110, 110, 248, 0.5);
+        }
+
+        .toggle-chat-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(110, 110, 248, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .toggle-chat-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(110, 110, 248, 0.6);
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Responsive styles */
+        @media (max-width: 1024px) {
+            .cards-container {
+                gap: 1.5rem;
+            }
+            
+            .card {
+                max-width: 280px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 3rem;
+            }
+            
+            .cards-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .card {
+                max-width: 100%;
+                width: 100%;
+            }
+
+            .chat-container {
+                width: 90%;
+                margin: 2rem auto;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 1.5rem;
+            }
+            
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .card {
+                padding: 1.5rem;
+                min-height: 260px;
+            }
+            
+            .card-title {
+                font-size: 1.3rem;
+            }
+            
+            .explore-btn {
+                padding: 0.7rem 1.2rem;
+                font-size: 0.9rem;
+            }
+
+            .toggle-chat-btn {
+                width: 50px;
+                height: 50px;
+                bottom: 1rem;
+                right: 1rem;
+            }
+        }
+
+        /* iOS specific optimizations */
+        @supports (-webkit-touch-callout: none) {
+            body {
+                -webkit-tap-highlight-color: transparent;
+            }
+            
+            .card {
+                transition: none;
+            }
+            
+            .explore-btn {
+                -webkit-tap-highlight-color: transparent;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="space-background">
+        <div class="stars" id="stars"></div>
+        <div class="shooting-stars" id="shooting-stars"></div>
+        <div class="galaxies" id="galaxies"></div>
+    </div>
+
+    <div class="cursor"></div>
+    <div class="cursor-follower"></div>
+
+    <div class="container">
+        <header>
+            <h1>Hiếu AI - Space</h1>
+            <p class="subtitle">Khám phá vũ trụ trí tuệ nhân tạo</p>
+        </header>
+
+        <div class="cards-container">
+            <div class="card">
+                <div>
+                    <div class="card-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3 class="card-title">AI Sức Khỏe</h3>
+                    <p class="card-desc">Tìm hiểu thêm sức khỏe của bạn với công nghệ AI tiên tiến.</p>
+                </div>
+                <a href="suckhoe.html" class="explore-btn">
+                    Khám phá <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="card">
+                <div>
+                    <div class="card-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h3 class="card-title">AI Tâm lý học đường</h3>
+                    <p class="card-desc">AI sẽ phân tích tâm lý học đường của bạn một cách chính xác.</p>
+                </div>
+                <a href="tamlyhocduong.html" class="explore-btn">
+                    Khám phá <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            
+        </div>
+
+       
+
+
+    <script>
+        const starsContainer = document.getElementById('stars');
+        const starCount = 200;
+        
+        for (let i = 0; i < starCount; i++) {
+            const star = document.createElement('div');
+            star.classList.add('star');
+            
+            const x = Math.random() * 0.5;
+            const y = Math.random() * 0.5;
+            
+            const size = Math.random() * 3;
+            
+            const duration = 2 + Math.random() * 8;
+            
+            star.style.left = `${x}%`;
+            star.style.top = `${y}%`;
+            star.style.width = `${size}px`;
+            star.style.height = `${size}px`;
+            star.style.setProperty('--duration', `${duration}s`);
+            
+            starsContainer.appendChild(star);
+        }
+        
+        const shootingStarsContainer = document.getElementById('shooting-stars');
+        const shootingStarCount = 5;
+        
+        for (let i = 0; i < shootingStarCount; i++) {
+            const shootingStar = document.createElement('div');
+            shootingStar.classList.add('shooting-star');
+            
+            const x = Math.random() * 100;
+            const y = Math.random() * 100;
+            
+            const angle = -45 + Math.random() * 90;
+            
+            const distanceX = 500 + Math.random() * 1000;
+            const distanceY = distanceX * Math.tan(angle * Math.PI / 180);
+            
+            const speed = 2 + Math.random() * 3;
+            const delay = Math.random() * 15;
+            
+            shootingStar.style.left = `${x}%`;
+            shootingStar.style.top = `${y}%`;
+            shootingStar.style.setProperty('--angle', `${angle}deg`);
+            shootingStar.style.setProperty('--distance-x', `${distanceX}px`);
+            shootingStar.style.setProperty('--distance-y', `${distanceY}px`);
+            shootingStar.style.setProperty('--speed', `${speed}s`);
+            shootingStar.style.setProperty('--delay', `${delay}s`);
+            
+            shootingStarsContainer.appendChild(shootingStar);
+        }
+        
+        const galaxiesContainer = document.getElementById('galaxies');
+        const galaxyCount = 3;
+        
+        for (let i = 0; i < galaxyCount; i++) {
+            const galaxy = document.createElement('div');
+            galaxy.classList.add('galaxy');
+            
+            const x = Math.random() * 100;
+            const y = Math.random() * 100;
+            
+            const size = 100 + Math.random() * 300;
+            
+            galaxy.style.left = `${x}%`;
+            galaxy.style.top = `${y}%`;
+            galaxy.style.width = `${size}px`;
+            galaxy.style.height = `${size}px`;
+            
+            galaxiesContainer.appendChild(galaxy);
+        }
+        
+        const cursor = document.querySelector('.cursor');
+        const cursorFollower = document.querySelector('.cursor-follower');
+        const links = document.querySelectorAll('a, button, .explore-btn');
+        const cards = document.querySelectorAll('.card');
+        
+        let mouseX = 0, mouseY = 0;
+        let followerX = 0, followerY = 0;
+        
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            if (cursor) cursor.style.transform = `translate(${mouseX}px, ${mouseY}px)`;
+        });
+        
+        function animateFollower() {
+            followerX += (mouseX - followerX) / 8;
+            followerY += (mouseY - followerY) / 8;
+            
+            if (cursorFollower) {
+                cursorFollower.style.transform = `translate(${followerX}px, ${followerY}px)`;
+            }
+            
+            requestAnimationFrame(animateFollower);
+        }
+        
+        animateFollower();
+        
+        function setCursorHover(isHovering) {
+            if (cursor) {
+                cursor.style.width = isHovering ? '30px' : '12px';
+                cursor.style.height = isHovering ? '30px' : '12px';
+                cursor.style.opacity = isHovering ? '0.5' : '1';
+            }
+            
+            if (cursorFollower) {
+                cursorFollower.style.width = isHovering ? '50px' : '30px';
+                cursorFollower.style.height = isHovering ? '50px' : '30px';
+                cursorFollower.style.opacity = isHovering ? '0.3' : '0.5';
+            }
+        }
+        
+        links.forEach(link => {
+            link.addEventListener('mouseenter', () => setCursorHover(true));
+            link.addEventListener('mouseleave', () => setCursorHover(false));
+        });
+        
+        cards.forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                const angleX = (y - centerY) / 20;
+                const angleY = (centerX - x) / 20;
+                card.style.transform = `perspective(1000px) rotateX(${angleX}deg) rotateY(${angleY}deg) translateY(-10px)`;
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
+            });
+        });
+        
+        const toggleChatBtn = document.getElementById('toggleChatBtn');
+        const chatContainer = document.getElementById('chatContainer');
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const chatSendBtn = document.getElementById('chatSendBtn');
+        
+        let isChatOpen = false;
+        
+        toggleChatBtn.addEventListener('click', () => {
+            isChatOpen = !isChatOpen;
+            if (isChatOpen) {
+                chatContainer.style.display = 'block';
+                setTimeout(() => {
+                    chatContainer.style.opacity = '1';
+                }, 10);
+            } else {
+                chatContainer.style.opacity = '0';
+                setTimeout(() => {
+                    chatContainer.style.display = 'none';
+                }, 300);
+            }
+        });
+        
+        function sendMessage() {
+            const message = chatInput.value.trim();
+            if (message === '') return;
+            
+            addMessage(message, 'user');
+            chatInput.value = '';
+            
+            setTimeout(() => {
+                const responses = [
+                    "Tôi hiểu câu hỏi của bạn. Để tôi giúp bạn với điều đó.",
+                    "Đây là thông tin bạn cần: [Thông tin giả lập từ AI]",
+                    "Tôi có thể cung cấp thêm chi tiết nếu bạn cần.",
+                    "Bạn có muốn tôi giải thích rõ hơn về vấn đề này không?",
+                    "Cảm ơn câu hỏi của bạn. Tôi đang xử lý thông tin."
+                ];
+                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                addMessage(randomResponse, 'ai');
+            }, 1000 + Math.random() * 2000);
+        }
+        
+        function addMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+            
+            const messageContent = document.createElement('div');
+            messageContent.classList.add(`message-${sender}`);
+            messageContent.textContent = text;
+            
+            const timeDiv = document.createElement('div');
+            timeDiv.classList.add('message-time');
+            timeDiv.textContent = 'Bây giờ';
+            
+            messageDiv.appendChild(messageContent);
+            messageDiv.appendChild(timeDiv);
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        chatSendBtn.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        if (isIOS) {
+            document.body.style.cursor = 'pointer';
+            cards.forEach(card => {
+                card.addEventListener('touchstart', () => {
+                    card.style.transform = 'perspective(1000px) translateY(-10px) rotateX(5deg) rotateY(5deg)';
+                });
+                card.addEventListener('touchend', () => {
+                    card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
+                });
+            });
+        }
+        
+        document.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 0) {
+                const touch = e.touches[0];
+                mouseX = touch.clientX;
+                mouseY = touch.clientY;
+            }
+        });
+    </script>
+</body>
+</html>
